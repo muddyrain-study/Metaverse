@@ -7,11 +7,10 @@ import { Octree } from "three/examples/jsm/math/Octree"
 import { Capsule } from "three/examples/jsm/math/Capsule"
 import { OctreeHelper } from "three/examples/jsm/helpers/OctreeHelper"
 import Stats from "three/examples/jsm/libs/stats.module"
-
 const scene = new THREE.Scene()
 scene.background = new THREE.Color(0x88ccee);
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000)
-camera.position.set(0, 10, 50)
+camera.position.set(0, 10, 10)
 camera.lookAt(scene.position)
 
 const renderer = new THREE.WebGLRenderer({
@@ -41,8 +40,6 @@ stats.dom.style.top = '0px'
 document.body.appendChild(stats.dom)
 
 
-
-
 const render = () => {
   const time = clock.getDelta()
   updatePlayer(time)
@@ -64,16 +61,12 @@ plane.receiveShadow = true
 plane.rotation.x = -Math.PI / 2
 scene.add(plane)
 
-const group = new THREE.Group()
-group.add(plane)
-scene.add(group)
-
 // 创建一个空间 
+
 const worldOctree = new Octree()
-worldOctree.fromGraphNode(group)
 
 // 创建一个人的碰撞体
-const playerCollider = new Capsule(new THREE.Vector3(0, 3.5, 0), new THREE.Vector3(0, 4.5, 0), 0.35)
+const playerCollider = new Capsule(new THREE.Vector3(0, 3.5, 0), new THREE.Vector3(0, 13.5, 0), 0.35)
 
 //  创建一个胶囊物体
 const capsuleGeometry = new THREE.CapsuleGeometry(0.35, 1, 32)
@@ -89,15 +82,9 @@ const gravity = -9.8
 const playerVelocity = new THREE.Vector3(0, 0, 0)
 // 方向向量
 const playerDirection = new THREE.Vector3(0, 0, 0)
-// 玩家是否在地面上
-let playerOnFloor = false
 
 function updatePlayer(deltaTime) {
-  if (playerOnFloor) {
-    playerVelocity.y = 0
-  } else {
-    playerVelocity.y += gravity * deltaTime
-  }
+  playerVelocity.y += gravity * deltaTime
   // 计算玩家移动的距离
   const playerMoveDistance = playerVelocity.clone().multiplyScalar(deltaTime)
   playerCollider.translate(playerMoveDistance)
@@ -110,13 +97,7 @@ function updatePlayer(deltaTime) {
 
 // 碰撞检测
 function playerCollisions() {
-  // 人物碰撞检测
-  const result = worldOctree.capsuleIntersect(playerCollider)
-  playerOnFloor = false
-  if (result) {
-    playerOnFloor = result.normal.y > 0
-    playerCollider.translate(result.normal.multiplyScalar(result.depth))
-  }
+
 }
 
 // 重置玩家
