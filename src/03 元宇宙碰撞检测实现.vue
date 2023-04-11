@@ -73,7 +73,7 @@ const worldOctree = new Octree()
 worldOctree.fromGraphNode(group)
 
 // 创建一个人的碰撞体
-const playerCollider = new Capsule(new THREE.Vector3(0, 3.5, 0), new THREE.Vector3(0, 4.5, 0), 0.35)
+const playerCollider = new Capsule(new THREE.Vector3(0, 0.35, 0), new THREE.Vector3(0, 1.35, 0), 0.35)
 
 //  创建一个胶囊物体
 const capsuleGeometry = new THREE.CapsuleGeometry(0.35, 1, 32)
