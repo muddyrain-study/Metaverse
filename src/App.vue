@@ -164,6 +164,13 @@ function controlsPlayer(deltaTime) {
     capsule.getWorldDirection(capsuleFront)
     playerVelocity.add(capsuleFront.multiplyScalar(deltaTime))
   }
+  if (keyDownStates['KeyS']) {
+    playerVelocity.z = -1
+    // 获取胶囊前方位置
+    const capsuleFront = new THREE.Vector3(0, 0, 0)
+    capsule.getWorldDirection(capsuleFront)
+    playerVelocity.add(capsuleFront.multiplyScalar(-deltaTime))
+  }
 }
 render()
 </script>
