@@ -42,13 +42,11 @@ document.body.appendChild(stats.dom)
 
 const render = () => {
   const time = clock.getDelta()
-  updatePlayer(time)
-  resetPlayer()
   orbitControls.update()
   renderer.render(scene, camera)
   requestAnimationFrame(render)
 }
-
+render()
 
 const planeGeometry = new THREE.PlaneGeometry(20, 20, 1, 1)
 const planeMaterial = new THREE.MeshBasicMaterial({
@@ -66,52 +64,18 @@ scene.add(plane)
 const worldOctree = new Octree()
 
 // 创建一个人的碰撞体
-const playerCollider = new Capsule(new THREE.Vector3(0, 3.5, 0), new THREE.Vector3(0, 13.5, 0), 0.35)
+const playerCollider = new Capsule(new THREE.Vector3(0, 0.35, 0), new THREE.Vector3(0, 1.35, 0), 0.35)
+
+console.log(playerCollider);
+console.log(worldOctree);
 
 //  创建一个胶囊物体
 const capsuleGeometry = new THREE.CapsuleGeometry(0.35, 1, 32)
 const capsuleMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000, side: THREE.DoubleSide });
 const capsule = new THREE.Mesh(capsuleGeometry, capsuleMaterial);
-capsule.position.set(0, 8.5, 0)
+capsule.position.set(0, 0.85, 0)
 capsule.castShadow = true
-scene.add(capsule);
-
-// 设置一个重力
-const gravity = -9.8
-// 设置初始速度
-const playerVelocity = new THREE.Vector3(0, 0, 0)
-// 方向向量
-const playerDirection = new THREE.Vector3(0, 0, 0)
-
-function updatePlayer(deltaTime) {
-  playerVelocity.y += gravity * deltaTime
-  // 计算玩家移动的距离
-  const playerMoveDistance = playerVelocity.clone().multiplyScalar(deltaTime)
-  playerCollider.translate(playerMoveDistance)
-  // 将胶囊的位置进行设置
-  playerCollider.getCenter(capsule.position)
-
-  // 进行碰撞检测
-  playerCollisions()
-}
-
-// 碰撞检测
-function playerCollisions() {
-
-}
-
-// 重置玩家
-function resetPlayer() {
-  if (capsule.position.y < -20) {
-    playerCollider.start.set(0, 2.35, 0)
-    playerCollider.end.set(0, 3.35, 0)
-    playerCollider.radius = 0.35
-    playerVelocity.set(0, 0, 0)
-    playerDirection.set(0, 0, 0)
-  }
-}
-
-render()
+scene.add(capsule); capsuleMaterial
 </script>
 
 <style >
