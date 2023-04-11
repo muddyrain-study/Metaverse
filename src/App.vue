@@ -29,8 +29,6 @@ document.body.appendChild(renderer.domElement)
 
 const clock = new THREE.Clock()
 
-const axesHelper = new THREE.AxesHelper(5)
-scene.add(axesHelper)
 
 const orbitControls = new OrbitControls(camera, renderer.domElement)
 orbitControls.enableDamping = true
@@ -40,9 +38,6 @@ stats.dom.style.position = 'absolute'
 stats.dom.style.left = '0px'
 stats.dom.style.top = '0px'
 document.body.appendChild(stats.dom)
-
-
-
 
 const render = () => {
   const time = clock.getDelta()
@@ -76,7 +71,7 @@ worldOctree.fromGraphNode(group)
 
 // 创建一个人的碰撞体
 const playerCollider = new Capsule(new THREE.Vector3(0, 3.5, 0), new THREE.Vector3(0, 4.5, 0), 0.35)
-
+console.log(playerCollider);
 //  创建一个胶囊物体
 const capsuleGeometry = new THREE.CapsuleGeometry(0.35, 1, 32)
 const capsuleMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000, side: THREE.DoubleSide });
@@ -103,43 +98,41 @@ let keyDownStates = {
 let playerOnFloor = false
 
 function updatePlayer(deltaTime) {
-  let damping = -0.1
+  // 设置摩擦力
+  const damping = -0.015
+  // 计算 y 周速度重力掉落
   if (playerOnFloor) {
     playerVelocity.y = 0
     if (!keyDownStates.isDown) {
       // 添加停下来的阻力摩擦力
       playerVelocity.addScaledVector(playerVelocity, damping)
     }
-
   } else {
-    playerVelocity.y += gravity * deltaTime
+    playerVelocity.y += deltaTime * gravity
+
   }
-  // 计算玩家移动的距离
-  const playerMoveDistance = playerVelocity.clone().multiplyScalar(deltaTime)
-  playerCollider.translate(playerMoveDistance)
-  // 将胶囊的位置进行设置
+  // 根据叉轴 计算出 每帧的移动速度
+  playerCollider.translate(playerVelocity.clone().multiplyScalar(deltaTime))
   playerCollider.getCenter(capsule.position)
 
-  // 进行碰撞检测
   playerCollisions()
 }
 
 // 碰撞检测
 function playerCollisions() {
-  // 人物碰撞检测
   const result = worldOctree.capsuleIntersect(playerCollider)
   playerOnFloor = false
   if (result) {
     playerOnFloor = result.normal.y > 0
-    playerCollider.translate(result.normal.multiplyScalar(result.depth))
+    // playerCollider.translate(result.normal.multiplyScalar(result.depth))
   }
 }
 
 // 重置玩家
 function resetPlayer() {
   if (capsule.position.y < -20) {
-    playerCollider.start.set(0, 2.35, 0)
-    playerCollider.end.set(0, 3.35, 0)
+    playerCollider.start.set(0, 3.5, 0)
+    playerCollider.end.set(0, 4.5, 0)
     playerCollider.radius = 0.35
     playerVelocity.set(0, 0, 0)
     playerDirection.set(0, 0, 0)
@@ -148,28 +141,27 @@ function resetPlayer() {
 document.addEventListener('keydown', event => {
   keyDownStates[event.code] = true
   keyDownStates.isDown = true
-  console.log(event.code);
 }, false)
 document.addEventListener('keyup', event => {
   keyDownStates[event.code] = false
   keyDownStates.isDown = false
 }, false)
 
-// 根据键盘状态更新玩家速度
+
 function controlsPlayer(deltaTime) {
-  if (keyDownStates['KeyW']) {
+  if (keyDownStates.KeyW) {
     playerVelocity.z = 1
-    // 获取胶囊前方位置
-    const capsuleFront = new THREE.Vector3(0, 0, 0)
-    capsule.getWorldDirection(capsuleFront)
-    playerVelocity.add(capsuleFront.multiplyScalar(deltaTime))
+    // // 获取胶囊前方位置
+    // const capsuleFront = new THREE.Vector3(0, 0, 0)
+    // capsule.getWorldDirection(capsuleFront)
+    // playerVelocity.add(capsuleFront.multiplyScalar(deltaTime))
   }
-  if (keyDownStates['KeyS']) {
+  if (keyDownStates.KeyS) {
     playerVelocity.z = -1
-    // 获取胶囊前方位置
-    const capsuleFront = new THREE.Vector3(0, 0, 0)
-    capsule.getWorldDirection(capsuleFront)
-    playerVelocity.add(capsuleFront.multiplyScalar(-deltaTime))
+    // // 获取胶囊前方位置
+    // const capsuleFront = new THREE.Vector3(0, 0, 0)
+    // console.log(capsuleFront.multiplyScalar(-deltaTime));
+    // playerVelocity.add(capsuleFront.multiplyScalar(-deltaTime))
   }
 }
 render()
