@@ -6,6 +6,7 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls"
 import { Octree } from "three/examples/jsm/math/Octree"
 import { Capsule } from "three/examples/jsm/math/Capsule"
 import { OctreeHelper } from "three/examples/jsm/helpers/OctreeHelper"
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader"
 import Stats from "three/examples/jsm/libs/stats.module.js";
 import { reactive } from "vue"
 
@@ -51,6 +52,12 @@ const render = () => {
   updatePlayer(time)
   resetPlayer()
   stats.update();
+
+  // 更新动作
+  if (mixer) {
+    mixer.update(time)
+  }
+
   // orbitControls.update()
   renderer.render(scene, activeCamera)
   requestAnimationFrame(render)
@@ -91,23 +98,54 @@ scene.add(octreeHelper)
 // 创建一个人的碰撞体
 const playerCollider = new Capsule(new THREE.Vector3(0, 0.35, 0), new THREE.Vector3(0, 1.35, 0), 0.35)
 
-// 创建一个平面身体
-const capsuleBodyGeometry = new THREE.PlaneGeometry(1, 0.5, 1, 1)
-const capsuleBodyMaterial = new THREE.MeshBasicMaterial({
-  color: 0x0000ff,
-  side: THREE.DoubleSide
+// // 创建一个平面身体
+// const capsuleBodyGeometry = new THREE.PlaneGeometry(1, 0.5, 1, 1)
+// const capsuleBodyMaterial = new THREE.MeshBasicMaterial({
+//   color: 0x0000ff,
+//   side: THREE.DoubleSide
+// })
+// const capsuleBody = new THREE.Mesh(capsuleBodyGeometry, capsuleBodyMaterial);
+// capsuleBody.position.set(0, 0.5, 0)
+
+// 加载机器人模型
+const loader = new GLTFLoader()
+let actions = {}
+let mixer = null
+let activeAction = null
+loader.load('/models/RobotExpressive.glb', (gltf) => {
+  const robot = gltf.scene
+  robot.scale.set(0.5, 0.5, 0.5)
+  robot.position.set(0, -0.85, 0)
+  scene.add(robot)
+  capsule.add(robot)
+  mixer = new THREE.AnimationMixer(robot)
+  for (const item of gltf.animations) {
+    actions[item.name] = mixer.clipAction(item)
+    if (['Idle', 'Walking', 'Runing'].includes(item.name)) {
+      actions[item.name].loop = THREE.LoopRepeat
+      actions[item.name].clampWhenFinished = false
+    } else {
+      actions[item.name].clampWhenFinished = true
+      actions[item.name].loop = THREE.LoopOnce
+    }
+  }
+  activeAction = actions['Idle']
+  activeAction.play()
 })
-const capsuleBody = new THREE.Mesh(capsuleBodyGeometry, capsuleBodyMaterial);
-capsuleBody.position.set(0, 0.5, 0)
+
+// 添加半球光源
+const hemisphereLight = new THREE.HemisphereLight(0xffffff, 0x444444, 1)
+scene.add(hemisphereLight)
+
 //  创建一个胶囊物体
-const capsuleGeometry = new THREE.CapsuleGeometry(0.35, 1, 32)
-const capsuleMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000, side: THREE.DoubleSide });
-const capsule = new THREE.Mesh(capsuleGeometry, capsuleMaterial);
+// const capsuleGeometry = new THREE.CapsuleGeometry(0.35, 1, 32)
+// const capsuleMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000, side: THREE.DoubleSide });
+const capsule = new THREE.Object3D();
 capsule.position.set(0, 0.85, 0)
 capsule.castShadow = true
 
 scene.add(capsule);
-capsule.add(capsuleBody);
+// capsule.add(capsuleBody);
 
 // 将相机作为胶囊的子元素 就可以实现跟随
 camera.position.set(0, 2, -5);
