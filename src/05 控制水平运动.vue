@@ -70,7 +70,7 @@ const worldOctree = new Octree()
 worldOctree.fromGraphNode(group)
 
 // 创建一个人的碰撞体
-const playerCollider = new Capsule(new THREE.Vector3(0, 3.5, 0), new THREE.Vector3(0, 4.5, 0), 0.35)
+const playerCollider = new Capsule(new THREE.Vector3(0, 0.35, 0), new THREE.Vector3(0, 1.35, 0), 0.35)
 console.log(playerCollider);
 //  创建一个胶囊物体
 const capsuleGeometry = new THREE.CapsuleGeometry(0.35, 1, 32)
@@ -80,13 +80,18 @@ capsule.position.set(0, 8.5, 0)
 capsule.castShadow = true
 scene.add(capsule);
 
+// 将相机作为胶囊的子元素 就可以实现跟随
+camera.position.set(0, 2, -5)
+camera.lookAt(capsule.position)
+orbitControls.target = capsule.position
+capsule.add(camera)
 // 设置一个重力
 const gravity = -9.8
 // 设置初始速度
 const playerVelocity = new THREE.Vector3(0, 0, 0)
 // 方向向量
 const playerDirection = new THREE.Vector3(0, 0, 0)
-let keyDownStates = {
+let keyStates = {
   KeyW: false,
   KeyS: false,
   KeyA: false,
@@ -99,14 +104,12 @@ let playerOnFloor = false
 
 function updatePlayer(deltaTime) {
   // 设置摩擦力
-  const damping = -0.015
+  const damping = -0.05
   // 计算 y 周速度重力掉落
   if (playerOnFloor) {
     playerVelocity.y = 0
-    if (!keyDownStates.isDown) {
-      // 添加停下来的阻力摩擦力
-      playerVelocity.addScaledVector(playerVelocity, damping)
-    }
+    keyStates.isDown ||
+      playerVelocity.addScaledVector(playerVelocity, damping);
   } else {
     playerVelocity.y += deltaTime * gravity
 
@@ -124,7 +127,7 @@ function playerCollisions() {
   playerOnFloor = false
   if (result) {
     playerOnFloor = result.normal.y > 0
-    // playerCollider.translate(result.normal.multiplyScalar(result.depth))
+    playerCollider.translate(result.normal.multiplyScalar(result.depth))
   }
 }
 
@@ -139,45 +142,48 @@ function resetPlayer() {
   }
 }
 document.addEventListener('keydown', event => {
-  keyDownStates[event.code] = true
-  keyDownStates.isDown = true
+  keyStates[event.code] = true
+  keyStates.isDown = true
 }, false)
 document.addEventListener('keyup', event => {
-  keyDownStates[event.code] = false
-  keyDownStates.isDown = false
+  keyStates[event.code] = false
+  keyStates.isDown = false
 }, false)
 
 
 function controlsPlayer(deltaTime) {
-  if (keyDownStates.KeyW) {
-    playerVelocity.z = -1
+  if (keyStates.KeyW) {
+    playerDirection.z = 1
     // // 获取胶囊前方位置
-    // const capsuleFront = new THREE.Vector3(0, 0, 0)
-    // capsule.getWorldDirection(capsuleFront)
-    // playerVelocity.add(capsuleFront.multiplyScalar(deltaTime))
+    const capsuleFront = new THREE.Vector3(0, 0, 0)
+    capsule.getWorldDirection(capsuleFront)
+    playerVelocity.add(capsuleFront.multiplyScalar(deltaTime))
   }
-  if (keyDownStates.KeyS) {
-    playerVelocity.z = 1
-    // // 获取胶囊前方位置
-    // const capsuleFront = new THREE.Vector3(0, 0, 0)
-    // capsule.getWorldDirection(capsuleFront)
-    // playerVelocity.add(capsuleFront.multiplyScalar(-deltaTime))
-  }
-  if (keyDownStates.KeyA) {
-    playerVelocity.x = -1
+  if (keyStates.KeyS) {
+    playerDirection.z = 1
     // 获取胶囊前方位置
-    // const capsuleFront = new THREE.Vector3(0, 0, 0)
-    // // 侧方的方向 正前面的方向和胶囊的正上方求叉积 求出侧方方向
-    // capsuleFront.cross(capsule.up)
-    // playerVelocity.add(capsuleFront.multiplyScalar(deltaTime))
+    const capsuleFront = new THREE.Vector3(0, 0, 0);
+    capsule.getWorldDirection(capsuleFront);
+    // 计算玩家的速度
+    playerVelocity.add(capsuleFront.multiplyScalar(-deltaTime));
   }
-  if (keyDownStates.KeyD) {
-    playerVelocity.x = 1
-    // // 获取胶囊前方位置
-    // const capsuleFront = new THREE.Vector3(0, 0, 0)
-    // // 侧方的方向 正前面的方向和胶囊的正上方求叉积 求出侧方方向
-    // capsuleFront.cross(capsule.up)
-    // playerVelocity.add(capsuleFront.multiplyScalar(deltaTime))
+  if (keyStates.KeyA) {
+    playerDirection.x = 1
+    // 获取胶囊前方位置
+    const capsuleFront = new THREE.Vector3(0, 0, 0)
+    capsule.getWorldDirection(capsuleFront);
+    // 侧方的方向 正前面的方向和胶囊的正上方求叉积 求出侧方方向
+    capsuleFront.cross(capsule.up)
+    playerVelocity.add(capsuleFront.multiplyScalar(-deltaTime))
+  }
+  if (keyStates.KeyD) {
+    playerDirection.x = 1
+    // 获取胶囊前方位置
+    const capsuleFront = new THREE.Vector3(0, 0, 0)
+    capsule.getWorldDirection(capsuleFront);
+    // 侧方的方向 正前面的方向和胶囊的正上方求叉积 求出侧方方向
+    capsuleFront.cross(capsule.up)
+    playerVelocity.add(capsuleFront.multiplyScalar(deltaTime))
   }
 }
 render()
