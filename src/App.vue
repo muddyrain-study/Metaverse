@@ -80,6 +80,11 @@ capsule.position.set(0, 8.5, 0)
 capsule.castShadow = true
 scene.add(capsule);
 
+// 将相机作为胶囊的子元素 就可以实现跟随
+camera.position.set(0, 2, -5)
+camera.lookAt(capsule.position)
+orbitControls.target = capsule.position
+capsule.add(camera)
 // 设置一个重力
 const gravity = -9.8
 // 设置初始速度
@@ -99,7 +104,7 @@ let playerOnFloor = false
 
 function updatePlayer(deltaTime) {
   // 设置摩擦力
-  const damping = -0.015
+  const damping = -0.55
   // 计算 y 周速度重力掉落
   if (playerOnFloor) {
     playerVelocity.y = 0
@@ -150,21 +155,21 @@ document.addEventListener('keyup', event => {
 
 function controlsPlayer(deltaTime) {
   if (keyDownStates.KeyW) {
-    playerVelocity.z = -1
+    playerVelocity.z = 1
     // // 获取胶囊前方位置
     // const capsuleFront = new THREE.Vector3(0, 0, 0)
     // capsule.getWorldDirection(capsuleFront)
     // playerVelocity.add(capsuleFront.multiplyScalar(deltaTime))
   }
   if (keyDownStates.KeyS) {
-    playerVelocity.z = 1
+    playerVelocity.z = -1
     // // 获取胶囊前方位置
     // const capsuleFront = new THREE.Vector3(0, 0, 0)
     // capsule.getWorldDirection(capsuleFront)
     // playerVelocity.add(capsuleFront.multiplyScalar(-deltaTime))
   }
   if (keyDownStates.KeyA) {
-    playerVelocity.x = -1
+    playerVelocity.x = 1
     // 获取胶囊前方位置
     // const capsuleFront = new THREE.Vector3(0, 0, 0)
     // // 侧方的方向 正前面的方向和胶囊的正上方求叉积 求出侧方方向
@@ -172,13 +177,19 @@ function controlsPlayer(deltaTime) {
     // playerVelocity.add(capsuleFront.multiplyScalar(deltaTime))
   }
   if (keyDownStates.KeyD) {
-    playerVelocity.x = 1
+    playerVelocity.x = -1
     // // 获取胶囊前方位置
     // const capsuleFront = new THREE.Vector3(0, 0, 0)
     // // 侧方的方向 正前面的方向和胶囊的正上方求叉积 求出侧方方向
     // capsuleFront.cross(capsule.up)
     // playerVelocity.add(capsuleFront.multiplyScalar(deltaTime))
   }
+  // 根据鼠标在屏幕移动 来旋转胶囊
+  window.addEventListener('mousemove', event => {
+    const mouseDeltaX = event.clientX - window.innerWidth / 2
+    const mouseDeltaY = event.clientY - window.innerHeight / 2
+    capsule.rotation.y = mouseDeltaX * 0.01
+  })
 }
 render()
 </script>
