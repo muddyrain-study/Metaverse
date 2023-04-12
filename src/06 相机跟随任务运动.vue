@@ -61,7 +61,6 @@ const plane = new THREE.Mesh(planeGeometry, planeMaterial)
 // 材质是否接收阴影。 默认为假。
 plane.receiveShadow = true
 plane.rotation.x = -Math.PI / 2
-scene.add(plane)
 
 const group = new THREE.Group()
 group.add(plane)
