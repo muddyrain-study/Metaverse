@@ -58,29 +58,6 @@ onMounted(() => {
   }
 
 
-  // const hdrLoader = new RGBELoader()
-  // hdrLoader.load(
-  //   "./hdr/023.hdr", texture => {
-  //     texture.mapping = THREE.EquirectangularReflectionMapping
-  //     texture.format = THREE.RGBAFormat
-  //     scene.background = texture
-  //     scene.environment = texture
-  //     sphereMaterial.envMap = cubeRenderTarget.texture
-  //   }
-  // )
-  // 创建平面
-  const planeGeometry = new THREE.PlaneGeometry(10, 10)
-  const planeMaterial = new THREE.MeshBasicMaterial({
-    color: 0xffffff,
-    side: THREE.DoubleSide,
-    transparent: true,
-    depthWrite: false,
-    // blending: THREE.AdditiveBlending
-  })
-  const plane = new THREE.Mesh(planeGeometry, planeMaterial)
-
-  scene.add(plane)
-
   // 创建canvas 对象 
   const canvas = document.createElement('canvas')
   canvas.width = 1080
@@ -92,25 +69,44 @@ onMounted(() => {
   canvas.style.transformOrigin = `0 0`
   canvas.style.transform = `scale(0.1)`
   const context = canvas.getContext('2d')
-  const image = new Image()
-  image.src = './textures/chat.png'
-  image.onload = () => {
-    // canvas 上绘制
-    context.drawImage(image, 0, 0, 1080, 1080)
-    context.textAlign = 'center'
-    context.textBaseline = 'middle'
-    context.font = 'bold 100px Arial'
-    context.fillStyle = `#ff0000`
-    context.fillText("helloword", canvas.width / 2, canvas.height / 2)
-    // plane.material.alphaMap = new THREE.CanvasTexture(canvas)
-    plane.material.map = new THREE.CanvasTexture(canvas)
-    plane.
-      plane.material.needsUpdate = true
+
+  // 添加视频纹理
+  const video = document.createElement("video")
+  video.src = "./video/keji1.mp4"
+  video.muted = true
+  video.loop = true
+  video.play()
+  const texture = new THREE.VideoTexture(video);
+  // 创建一个平面
+  const planeGeometry = new THREE.PlaneGeometry(2, 2, 1, 1);
+  const planeMaterial = new THREE.MeshBasicMaterial({
+    color: 0xffffff,
+    side: THREE.DoubleSide,
+    map: texture,
+    alphaMap: texture,
+    transparent: true,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+  });
+  const plane = new THREE.Mesh(planeGeometry, planeMaterial);
+  scene.add(plane);
+
+  function drawVideoText() {
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    context.textAlign = "center";
+    context.textBaseline = "middle";
+    context.font = "bold 100px Arial";
+    context.fillStyle = "rgba(255,255,255,1)";
+    context.fillText("Hello World", canvas.width / 2, canvas.height / 2);
+
+    texture.needsUpdate = true;
+    planeMaterial.needsUpdate = true;
   }
-  document.body.appendChild(canvas)
+  document.body.appendChild(canvas);
 
   render()
-
 })
 </script>
 
