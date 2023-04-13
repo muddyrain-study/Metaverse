@@ -116,14 +116,14 @@ loader.load('/models/RobotExpressive.glb', (gltf) => {
   const robot = gltf.scene
   robot.scale.set(0.5, 0.5, 0.5)
   robot.position.set(0, -0.85, 0)
-  scene.add(robot)
   capsule.add(robot)
   mixer = new THREE.AnimationMixer(robot)
-  for (const item of gltf.animations) {
+  for (let i = 0; i < gltf.animations.length; i++) {
+    const item = gltf.animations[i]
     actions[item.name] = mixer.clipAction(item)
-    if (['Idle', 'Walking', 'Runing'].includes(item.name)) {
-      actions[item.name].loop = THREE.LoopRepeat
+    if (['Idle', 'Walking', 'Running'].includes(item.name)) {
       actions[item.name].clampWhenFinished = false
+      actions[item.name].loop = THREE.LoopRepeat
     } else {
       actions[item.name].clampWhenFinished = true
       actions[item.name].loop = THREE.LoopOnce
@@ -198,7 +198,6 @@ function updatePlayer(deltaTime) {
 
   // 如果有水平运动 则设置运动动作
   const currentVelocity = Math.abs(playerVelocity.x) + Math.abs(playerVelocity.z)
-  console.log(currentVelocity);
   if (currentVelocity > 0.1 && currentVelocity <= 3) {
     fadeToAction('Walking')
     // 如果有水平运动 则设置运动动作
@@ -207,6 +206,7 @@ function updatePlayer(deltaTime) {
   } else {
     fadeToAction('Idle')
   }
+
 
 }
 
@@ -223,8 +223,8 @@ function playerCollisions() {
 // 重置玩家
 function resetPlayer() {
   if (capsule.position.y < -20) {
-    playerCollider.start.set(0, 3.5, 0)
-    playerCollider.end.set(0, 4.5, 0)
+    playerCollider.start.set(0, 2.35, 0)
+    playerCollider.end.set(0, 3.35, 0)
     playerCollider.radius = 0.35
     playerVelocity.set(0, 0, 0)
     playerDirection.set(0, 0, 0)
@@ -260,6 +260,7 @@ function fadeToAction(name) {
   }
 }
 
+// 根据键盘状态更新玩家的速度
 function controlsPlayer(deltaTime) {
   if (keyStates["KeyW"]) {
     playerDirection.z = 1;
@@ -296,6 +297,7 @@ function controlsPlayer(deltaTime) {
     //获取胶囊的正前面方向
     const capsuleFront = new THREE.Vector3(0, 0, 0);
     capsule.getWorldDirection(capsuleFront);
+
     // 侧方的方向，正前面的方向和胶囊的正上方求叉积，求出侧方的方向
     capsuleFront.cross(capsule.up);
     // console.log(capsuleFront);
@@ -303,7 +305,7 @@ function controlsPlayer(deltaTime) {
     playerVelocity.add(capsuleFront.multiplyScalar(deltaTime));
   }
   if (keyStates["Space"]) {
-    playerVelocity.y = 5;
+    playerVelocity.y = 15;
   }
 }
 window.addEventListener('mousemove', event => {
