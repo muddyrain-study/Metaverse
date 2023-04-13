@@ -75,7 +75,7 @@ const material = new THREE.MeshBasicMaterial({ color: 0xffff00 });
 //   )
 //   scene.add(torusKnot);
 // }
-const instanceMesh = new THREE.InstancedMesh(geometry, material, 10000)
+const instanceMesh = new THREE.InstancedMesh(geometry, material, 1000)
 for (let i = 0; i < 1000; i++) {
   const postion = new THREE.Vector3(
     Math.random() * 100 - 50,
